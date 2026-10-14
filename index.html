@@ -1,0 +1,226 @@
+<title>Surgical Assistance Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: slim top bar with five views; dense, table-first workspace like a lab information system. */
+:root {
+  --bg: #f2f5f6; --panel: #ffffff; --ink: #14212b; --muted: #5a6b77; --line: #d7dfe3;
+  --accent: #0f6e7a; --accent-soft: #dcefef; --good: #1f7a4d; --warn: #a65f00; --bad: #b3261e;
+  --warn-soft: #fbeed6; --good-soft: #dff1e7; --bad-soft: #f7dedb; --video: #1b2a33;
+  --c1: #5b7c99; --c2: #7a9e7e; --c3: #c28f4a; --c4: #a8576b; --c5: #7d6aa8; --c6: #4a9aa0; --c7: #8a8f94;
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f171c; --panel: #172228; --ink: #e4ecef; --muted: #8fa1ab; --line: #2a3a43;
+  --accent: #4fb6c2; --accent-soft: #17383d; --good: #55c28a; --warn: #e0a24a; --bad: #ef7d73;
+  --warn-soft: #3a2e17; --good-soft: #173526; --bad-soft: #3d1f1c; --video: #0a1013;
+  --c1: #7f9fbd; --c2: #8fb893; --c3: #d6a766; --c4: #c77a8d; --c5: #9a89c4; --c6: #66b4ba; --c7: #9aa0a5; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f171c; --panel: #172228; --ink: #e4ecef; --muted: #8fa1ab; --line: #2a3a43;
+  --accent: #4fb6c2; --accent-soft: #17383d; --good: #55c28a; --warn: #e0a24a; --bad: #ef7d73;
+  --warn-soft: #3a2e17; --good-soft: #173526; --bad-soft: #3d1f1c; --video: #0a1013;
+  --c1: #7f9fbd; --c2: #8fb893; --c3: #d6a766; --c4: #c77a8d; --c5: #9a89c4; --c6: #66b4ba; --c7: #9aa0a5; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px 32px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 8px 0 12px; border-bottom: 1px solid var(--line); }
+.brand { font-weight: 600; font-size: 16px; letter-spacing: .01em; }
+.brand small { font-family: var(--mono); font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 8px; }
+nav { display: flex; flex-wrap: wrap; gap: 4px; }
+nav button { font: inherit; background: none; border: 0; color: var(--muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+nav button:hover { color: var(--ink); background: var(--panel); }
+nav button[aria-selected="true"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.badge { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--warn); background: var(--warn-soft); padding: 3px 8px; border-radius: 4px; }
+h1 { font-size: 20px; font-weight: 600; margin: 20px 0 4px; text-wrap: balance; }
+p.lead { margin: 0 0 16px; color: var(--muted); max-width: 70ch; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; align-items: end; }
+.filters label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+select { font: inherit; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 150px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.id { font-family: var(--mono); font-size: 12.5px; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--accent-soft); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; }
+.ok { background: var(--good-soft); color: var(--good); } .wn { background: var(--warn-soft); color: var(--warn); } .bd { background: var(--bad-soft); color: var(--bad); } .nt { background: var(--accent-soft); color: var(--accent); }
+.videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.vid { background: var(--video); border-radius: 6px; aspect-ratio: 16/10; position: relative; overflow: hidden; background-image: repeating-linear-gradient(135deg, transparent 0 14px, rgba(255,255,255,.04) 14px 15px); }
+.vid span { position: absolute; left: 8px; top: 6px; font: 11.5px var(--mono); color: #b9c8d0; }
+.vid em { position: absolute; right: 8px; bottom: 6px; font: normal 11.5px var(--mono); color: #b9c8d0; }
+.vid svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.scrub { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+.scrub input { flex: 1; accent-color: var(--accent); }
+.scrub output { font-family: var(--mono); min-width: 90px; text-align: right; }
+.now { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.now div { background: var(--bg); border-radius: 6px; padding: 8px 12px; }
+.now b { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.tl { overflow-x: auto; }
+.tl svg { min-width: 760px; width: 100%; height: auto; display: block; }
+.tl text { font-family: var(--font); font-size: 11.5px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.sug { display: grid; gap: 8px; }
+.sug div { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; }
+.sug .what { flex: 1; min-width: 180px; }
+.sug small { color: var(--muted); display: block; }
+.btn { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.btn.pri { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 140px 1fr 56px; gap: 10px; align-items: center; }
+.bar .tr { background: var(--bg); border-radius: 4px; height: 12px; overflow: hidden; }
+.bar .tr i { display: block; height: 100%; background: var(--accent); }
+.bar .tr i.alt { background: var(--c3); }
+.bar b { font: 500 12.5px var(--mono); text-align: right; }
+.pair { display: grid; gap: 4px; }
+.check { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.check:last-child { border: 0; }
+.check small { grid-column: 2; color: var(--muted); }
+.mods { display: grid; gap: 8px; }
+.mod { text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: pointer; }
+.mod[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.mod small { display: block; color: var(--muted); }
+.opts { display: grid; gap: 6px; margin: 8px 0; }
+.opts label { display: flex; gap: 8px; align-items: baseline; }
+.fb { margin-top: 8px; padding: 8px 12px; border-radius: 6px; }
+ul.plain { margin: 0; padding-left: 18px; } ul.plain li { margin: 4px 0; }
+.note { color: var(--muted); font-size: 12.5px; margin-top: 16px; }
+@media (max-width: 560px) { .bar { grid-template-columns: 100px 1fr 48px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand">Surgical Assistance Portal<small>concept mockup</small></div>
+  <nav role="tablist" id="nav"></nav>
+  <span class="badge">Example data only</span>
+</header>
+<main id="view"></main>
+<p class="note">All cases, sites, scores and clips on this page are invented examples to show how the data could be displayed. Nothing here is patient data.</p>
+</div>
+
+<script>
+const TABS = [['cases','Cases'],['viewer','Case viewer'],['quality','Quality'],['training','Training']];
+const CASES = [
+ ['SA-0001','Clinic A','Ex vivo','Mock lesion, porcine skin','Fixture A',32,'3 / 3','Not needed','Reviewed'],
+ ['SA-0002','Clinic A','Ex vivo','Mock lesion, porcine skin','Fixture A',29,'3 / 3','Not needed','Reviewed'],
+ ['SA-0003','Clinic A','Ex vivo','Mock cyst, porcine skin','Fixture B',41,'3 / 3','Not needed','Reviewed'],
+ ['SA-0004','Clinic A','Tier 1','Nevus','Upper back',24,'3 / 3','Complete','Reviewed'],
+ ['SA-0005','Clinic A','Tier 1','Skin tag','Thigh',14,'3 / 3','Complete','Reviewed'],
+ ['SA-0006','Clinic A','Tier 1','Nevus','Abdomen',27,'2 / 3','Complete','Check: view missing'],
+ ['SA-0007','Clinic A','Tier 2','Epidermoid cyst','Shoulder',38,'3 / 3','Complete','In review'],
+ ['SA-0008','Clinic A','Tier 2','Small lipoma','Flank',46,'3 / 3','Complete','In review'],
+ ['SA-0009','Partner clinic B','Tier 1','Nevus','Upper arm',26,'3 / 3','Complete','In review'],
+ ['SA-0010','Partner clinic B','Tier 1','Nevus','Back',31,'3 / 3','Complete','Check: sync drift'],
+ ['SA-0011','Partner clinic B','Tier 2','Sebaceous cyst','Neck, posterior',35,'3 / 3','Complete','Queued']
+];
+const PHASES = [['Marking',0,4,'--c1'],['Anesthesia',4,9,'--c2'],['Incision',9,13,'--c3'],['Excision',13,24,'--c4'],['Hemostasis',24,28,'--c5'],['Closure',28,36,'--c6'],['Dressing',36,38,'--c7']];
+const ACTS = [['Tension skin',9,24],['Suction',12,14],['Suction',17,18],['Assist cautery',24,28],['Pass instrument',28,30],['Cut suture',31,32],['Pass instrument',33,34],['Cut suture',35,36]];
+let SUG = [
+ {id:1,label:'Retract edge',s:15,e:17,conf:.58,state:'pending',note:'Assistant hand moves to wound edge'},
+ {id:2,label:'Suction',s:20,e:21,conf:.81,state:'pending',note:'Blood visible in field; suction tip enters'},
+ {id:3,label:'Pass instrument',s:30,e:31,conf:.93,state:'pending',note:'Needle holder handed over after verbal cue'}
+];
+const TRAIN = [
+ {t:'Tensioning skin during excision',d:'12 clips · Tier 1 and 2',steps:['Stand opposite the surgeon with both hands free.','Apply counter-traction away from the incision line, flat to the skin.','Keep the whole ellipse in view; reposition when the surgeon turns the blade.'],err:'Tension released at the end of the cut in 3 of 12 clips; the edge rolled and the surgeon paused.',q:'The surgeon starts the second side of the ellipse. What should the assistant do?',o:['Release tension to rest the hands','Re-grip so tension stays across the new cutting line','Move the suction tip over the lesion'],a:1},
+ {t:'Suction without blocking the view',d:'8 clips · Tier 1 and 2',steps:['Hold the tip beside the wound, not over it.','Clear blood only when the surgeon pauses or asks.','Keep the tip off tissue surfaces.'],err:'Suction tip crossed the surgeon sight line in 2 of 8 clips.',q:'Blood pools along the lower edge. Where does the tip go?',o:['Directly over the lesion','Beside the lower edge, clear of the cutting line','Behind the surgeon'],a:1},
+ {t:'Passing instruments and cutting suture',d:'10 clips · Tier 1 and 2',steps:['Present instruments handle first, in the surgeon preferred orientation.','Wait for the cue before the next pass.','Cut suture at the length the surgeon states, then step back.'],err:'Handover delayed after the verbal cue in 4 of 10 clips.',q:'The surgeon says "scissors" during closure. What comes first?',o:['Hand the scissors handle first','Hand the scissors blades first','Wait until the surgeon asks twice'],a:0}
+];
+const $ = (s,r=document) => r.querySelector(s);
+let tab = 'cases', sel = 'SA-0007', filt = {tier:'All',site:'All'}, now = 20, modIdx = 0, answered = {};
+
+function pillQC(q){ return '<span class="pill '+(q==='Reviewed'?'ok':q.startsWith('Check')?'wn':'nt')+'">'+q+'</span>'; }
+
+function nav(){ $('#nav').innerHTML = TABS.map(([k,l])=>'<button role="tab" aria-selected="'+(k===tab)+'" data-t="'+k+'">'+l+'</button>').join('');
+  document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render();}); }
+
+function cases(){
+  const rows = CASES.filter(c=>(filt.tier==='All'||c[2]===filt.tier)&&(filt.site==='All'||c[1]===filt.site));
+  const opt = (arr,v)=>arr.map(x=>'<option'+(x===v?' selected':'')+'>'+x+'</option>').join('');
+  return '<h1>Cases</h1><p class="lead">Every recording is one row. Filters follow the tiers and sites in the plan; open a row to review it with its labels.</p>'+
+  '<div class="panel"><div class="filters"><label>Tier<select id="ft">'+opt(['All','Ex vivo','Tier 1','Tier 2'],filt.tier)+'</select></label>'+
+  '<label>Site<select id="fs">'+opt(['All','Clinic A','Partner clinic B'],filt.site)+'</select></label>'+
+  '<span style="margin-left:auto;color:var(--muted)">'+rows.length+' of '+CASES.length+' cases</span></div>'+
+  '<div class="tablewrap"><table><thead><tr><th>Case</th><th>Site</th><th>Tier</th><th>Lesion</th><th>Region</th><th class="num">Min</th><th>Views</th><th>Consent</th><th>Status</th></tr></thead><tbody>'+
+  rows.map(c=>'<tr data-id="'+c[0]+'"><td class="id">'+c[0]+'</td><td>'+c[1]+'</td><td>'+c[2]+'</td><td>'+c[3]+'</td><td>'+c[4]+'</td><td class="num">'+c[5]+'</td><td>'+c[6]+'</td><td>'+c[7]+'</td><td>'+pillQC(c[8])+'</td></tr>').join('')+
+  '</tbody></table></div></div>';
+}
+
+function tlSVG(){
+  const W=900, L=110, R=20, X=m=>L+(W-L-R)*m/38; let h=''; const rows=[['Phase',28],['Assistant action',68],['AI proposals',108]];
+  rows.forEach(([n,y])=>{h+='<text x="0" y="'+(y+14)+'">'+n+'</text><line x1="'+L+'" x2="'+(W-R)+'" y1="'+(y+32)+'" y2="'+(y+32)+'" stroke="var(--line)"/>';});
+  PHASES.forEach(p=>{h+='<rect x="'+X(p[1])+'" y="28" width="'+(X(p[2])-X(p[1])-2)+'" height="22" rx="3" fill="var('+p[3]+')"/>';});
+  ACTS.forEach(a=>{h+='<rect x="'+X(a[1])+'" y="68" width="'+(X(a[2])-X(a[1])-2)+'" height="22" rx="3" fill="var(--accent)" fill-opacity="'+(a[0]==='Tension skin'?.35:.8)+'"><title>'+a[0]+'</title></rect>';});
+  SUG.forEach(s=>{const st=s.state; h+='<rect x="'+X(s.s)+'" y="108" width="'+(X(s.e)-X(s.s)-2)+'" height="22" rx="3" fill="'+(st==='accepted'?'var(--accent)':'none')+'" fill-opacity=".8" stroke="'+(st==='rejected'?'var(--bad)':'var(--accent)')+'" stroke-width="1.5" '+(st==='pending'?'stroke-dasharray="4 3"':'')+'><title>'+s.label+' ('+Math.round(s.conf*100)+'%)</title></rect>';});
+  for(let m=0;m<=38;m+=4){h+='<text x="'+X(m)+'" y="156" text-anchor="middle">'+m+' min</text>';}
+  h+='<line id="ph" x1="'+X(now)+'" x2="'+X(now)+'" y1="16" y2="140" stroke="var(--bad)" stroke-width="2"/>';
+  return '<svg viewBox="0 0 900 166" role="img" aria-label="Timeline of phases, assistant actions and AI proposals">'+h+'</svg>';
+}
+function curPhase(){ return (PHASES.find(p=>now>=p[1]&&now<p[2])||PHASES[6])[0]; }
+function curActs(){ const a=ACTS.filter(x=>now>=x[1]&&now<x[2]).map(x=>x[0]); return a.length?a.join(', '):'none'; }
+const tc = m => String(Math.floor(m)).padStart(2,'0')+':'+(m%1?'30':'00');
+
+function viewer(){
+  const c = CASES.find(x=>x[0]===sel);
+  return '<h1>Case viewer</h1><p class="lead">'+c[0]+' · '+c[1]+' · '+c[2]+' · '+c[3]+', '+c[4]+'. Three synchronised views, with human labels and AI proposals on one timeline.</p>'+
+  '<div class="grid"><div class="panel"><div class="videos">'+
+  ['Overhead stereo','Surgeon close-up','Assistant side'].map((n,i)=>'<div class="vid"><span>'+n+'</span><em class="tcv">'+tc(now)+'</em><svg viewBox="0 0 160 100" aria-hidden="true"><ellipse cx="80" cy="54" rx="'+(30+i*6)+'" ry="'+(16+i*3)+'" fill="none" stroke="#b9c8d0" stroke-opacity=".35"/><circle cx="'+(60+i*14)+'" cy="50" r="3" fill="#b9c8d0" fill-opacity=".6"/></svg></div>').join('')+'</div>'+
+  '<div class="scrub"><input type="range" id="sc" min="0" max="38" step="0.5" value="'+now+'" aria-label="Playback position"><output id="oc">'+tc(now)+' / 38:00</output></div>'+
+  '<div class="now"><div><b>Phase</b><span id="np">'+curPhase()+'</span></div><div><b>Assistant action</b><span id="na">'+curActs()+'</span></div><div><b>Context</b>Excision, '+c[3].toLowerCase()+'</div></div>'+
+  '<div class="tl" id="tl">'+tlSVG()+'</div>'+
+  '<div class="legend">'+PHASES.map(p=>'<span><i style="background:var('+p[3]+')"></i>'+p[0]+'</span>').join('')+'<span><i style="background:var(--accent)"></i>Human label</span><span><i style="border:1.5px dashed var(--accent)"></i>AI proposal, unreviewed</span></div></div>'+
+  '<div class="panel"><h2>AI proposals to review</h2><div class="sug" id="sug">'+sugHTML()+'</div></div></div>';
+}
+function sugHTML(){ return SUG.map(s=>'<div><div class="what"><b>'+s.label+'</b> · '+tc(s.s)+' to '+tc(s.e)+'<small>'+s.note+'</small></div><span class="pill '+(s.conf>.85?'ok':s.conf>.7?'nt':'wn')+'">'+Math.round(s.conf*100)+'% confident</span>'+
+  (s.state==='pending'?'<button class="btn pri" data-a="accepted" data-i="'+s.id+'">Accept</button><button class="btn" data-a="rejected" data-i="'+s.id+'">Reject</button>':'<span class="pill '+(s.state==='accepted'?'ok':'bd')+'">'+s.state+'</span>')+'</div>').join(''); }
+
+function quality(){
+  const ag=[['Phase',.91,.92],['Assistant action',.84,.79],['Trigger',.72,.61],['Quality and safety flags',.68,.52]];
+  const tiers=[['Ex vivo',3],['Tier 1',5],['Tier 2',3]];
+  const chk=[['ok','Sync error within limit','Largest offset between streams in this session is under the agreed threshold.'],['wn','Assistant camera partly blocked','The surgeon\'s shoulder hid the assistant\'s hands for a large part of closure. Suggested fix: raise the camera and tilt it down about 20 degrees.'],['ok','Calibration stable','Checkerboard residual matches the start of the session.'],['ok','Audio level','Verbal cues are clear.'],['ok','Consent flags complete','Patient and staff consent recorded for this case.']];
+  return '<h1>Quality</h1><p class="lead">What a contributing clinic sees after each session, and how far AI labelling can be trusted layer by layer.</p>'+
+  '<div class="grid g2"><div class="panel"><h2>Agreement by layer (example scores)</h2><div class="bars">'+
+  ag.map(a=>'<div class="pair"><div style="display:flex;justify-content:space-between"><span>'+a[0]+'</span><span class="pill '+(a[2]>=a[1]?'ok':'wn')+'">'+(a[2]>=a[1]?'automatic':'review needed')+'</span></div>'+
+  '<div class="bar"><span style="color:var(--muted)">Human vs human</span><div class="tr"><i style="width:'+a[1]*100+'%"></i></div><b>'+a[1].toFixed(2)+'</b></div>'+
+  '<div class="bar"><span style="color:var(--muted)">AI vs surgeon</span><div class="tr"><i class="alt" style="width:'+a[2]*100+'%"></i></div><b>'+a[2].toFixed(2)+'</b></div></div>').join('')+
+  '</div><p class="note">A layer becomes automatic when AI vs surgeon agreement reaches human vs human agreement.</p></div>'+
+  '<div class="panel"><h2>Session report: '+sel+'</h2>'+chk.map(c=>'<div class="check"><span class="pill '+c[0]+'">'+(c[0]==='ok'?'Pass':'Check')+'</span><b>'+c[1]+'</b><small>'+c[2]+'</small></div>').join('')+'</div>'+
+  '<div class="panel"><h2>Coverage by tier</h2><div class="bars">'+tiers.map(t=>'<div class="bar"><span>'+t[0]+'</span><div class="tr"><i style="width:'+t[1]/5*100+'%"></i></div><b>'+t[1]+'</b></div>').join('')+'</div></div>'+
+  '<div class="panel"><h2>Sites</h2><div class="tablewrap"><table style="min-width:0"><thead><tr><th>Site</th><th class="num">Cases</th><th>Status</th></tr></thead><tbody>'+
+  '<tr><td>Clinic A</td><td class="num">8</td><td><span class="pill ok">Contributing</span></td></tr><tr><td>Partner clinic B</td><td class="num">3</td><td><span class="pill ok">Contributing</span></td></tr><tr><td>Partner clinic C</td><td class="num">0</td><td><span class="pill nt">Onboarding</span></td></tr></tbody></table></div></div></div>';
+}
+
+function training(){
+  const m=TRAIN[modIdx], ans=answered[modIdx];
+  return '<h1>Training</h1><p class="lead">The same labelled clips teach new assistants: each module shows the task, the usual errors found in the data, and a short check.</p>'+
+  '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="panel"><h2>Modules</h2><div class="mods">'+
+  TRAIN.map((t,i)=>'<button class="mod" aria-pressed="'+(i===modIdx)+'" data-m="'+i+'">'+t.t+'<small>'+t.d+(answered[i]!==undefined?' · checked':'')+'</small></button>').join('')+'</div></div>'+
+  '<div class="panel" style="grid-column:span 2;min-width:0"><h2>'+m.t+'</h2><div class="vid" style="max-width:420px;margin-bottom:12px"><span>Example clip</span><em>00:00</em></div>'+
+  '<b>Steps</b><ul class="plain">'+m.steps.map(s=>'<li>'+s+'</li>').join('')+'</ul>'+
+  '<div class="fb wn" style="margin:12px 0"><b>Seen in the data</b><br>'+m.err+'</div>'+
+  '<b>Check</b><p style="margin:4px 0">'+m.q+'</p><div class="opts" id="opts">'+m.o.map((o,i)=>'<label><input type="radio" name="q" value="'+i+'" id="o'+i+'"'+(ans===i?' checked':'')+'><span>'+o+'</span></label>').join('')+'</div>'+
+  (ans!==undefined?'<div class="fb '+(ans===m.a?'ok':'bd')+'">'+(ans===m.a?'Correct.':'Not quite. The correct answer is: '+m.o[m.a]+'.')+'</div>':'')+'</div></div>';
+}
+
+function render(){
+  nav();
+  $('#view').innerHTML = ({cases,viewer,quality,training})[tab]();
+  if(tab==='cases'){ $('#ft').onchange=e=>{filt.tier=e.target.value;render();}; $('#fs').onchange=e=>{filt.site=e.target.value;render();};
+    document.querySelectorAll('tbody tr').forEach(r=>r.onclick=()=>{sel=r.dataset.id;tab='viewer';render();}); }
+  if(tab==='viewer'){ $('#sc').oninput=e=>{now=+e.target.value; $('#oc').textContent=tc(now)+' / 38:00'; $('#np').textContent=curPhase(); $('#na').textContent=curActs();
+      document.querySelectorAll('.tcv').forEach(x=>x.textContent=tc(now)); const x=110+(900-130)*now/38; const p=$('#ph'); p.setAttribute('x1',x); p.setAttribute('x2',x); };
+    $('#sug').onclick=e=>{const b=e.target.closest('button'); if(!b) return; SUG.find(s=>s.id==+b.dataset.i).state=b.dataset.a; $('#sug').innerHTML=sugHTML(); $('#tl').innerHTML=tlSVG(); }; }
+  if(tab==='training'){ document.querySelectorAll('.mod').forEach(b=>b.onclick=()=>{modIdx=+b.dataset.m;render();});
+    $('#opts').onchange=e=>{answered[modIdx]=+e.target.value;render();}; }
+}
+render();
+</script>
